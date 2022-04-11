@@ -201,7 +201,7 @@ class screenStatic {
   void backGroundImageRefresh(){
       myScreen.drawXBitmap(0 ,0, background, screenHeight, screenWidth, TFT_WHITE);    
   }
-  void fullScreenStatic(long interval, byte repeatValue){
+  void fullScreenStaticTimed(long interval, byte repeatValue){
     unsigned long currentMillis = millis();
     if (currentMillis - previousMillis >= interval){
       previousMillis = currentMillis;
@@ -221,6 +221,22 @@ class screenStatic {
       myScreen.fillScreen(TFT_BLACK);
     }
   }
+  void fullScreenStatic(byte repeatValue){
+      for (byte repeat; repeat < repeatValue; repeat ++){
+        for (byte j = 0; j < screenWidth; j += staticPixelSize){
+          for (byte i = 0; i < screenHeight; i += staticPixelSize){
+            byte pixel = random(0, 10);
+            if (pixel <= 5){
+              myScreen.fillRect(i, j, staticPixelSize, staticPixelSize, TFT_WHITE);
+            }
+            else {
+              myScreen.fillRect(i, j, staticPixelSize, staticPixelSize, backgroundColour);
+            }
+          }
+        }
+      }
+      myScreen.fillScreen(TFT_BLACK);
+  }
   private :
   byte screenHeight;
   byte screenWidth;
@@ -239,13 +255,15 @@ const byte SCREENWIDTH = 128;
 const byte SCREENHEIGHT = 160;
 void setup(){
   Serial.begin(115200);
+  delay(1000);  
   staticOne.start(0, SCREENHEIGHT, SCREENWIDTH, 5, 2, Testcard_F);
   staticTwo.start(64, SCREENHEIGHT, SCREENWIDTH, 5, 2, Testcard_F);
-  delay(50);
+  staticOne.fullScreenStatic(100);
+//  delay(8000);
 }
 void loop() {
-//  staticOne.displayStaticBar();
+  staticOne.displayStaticBar();
 //  staticTwo.displayStaticBar();
-  staticOne.fullScreenStatic(2000, 5);
+//  staticOne.fullScreenStaticTimed(1000, 10);
   staticOne.backGroundImageRefresh();
 }
