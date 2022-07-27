@@ -1305,16 +1305,55 @@ uint16_t Testcard_F[] PROGMEM = {
 
 class screenStatic {
   public:
-    void start(byte tempStaticStartPosition, byte tempHeight, byte tempWidth, byte tempStaticHeight, byte tempPixelSize, uint16_t *tempBackground){
-    screenHeight = tempHeight;
-    screenWidth = tempWidth;
-    staticStripHeight = tempStaticHeight;
-    background = tempBackground;
-    staticPixelSize = tempPixelSize;
-    staticStartPosition = tempStaticStartPosition;
+  //constructor
+    screenStatic (byte staticStartPosition, byte screenHeight, byte screenWidth, byte staticStripHeight, byte staticPixelSize, byte pixelThreshold, uint16_t *background){
+      this -> staticStartPosition = staticStartPosition;
+      this -> screenHeight = screenHeight;
+      this -> screenWidth = screenWidth;
+      this -> staticStripHeight = staticStripHeight;
+      this -> staticPixelSize = staticPixelSize;
+      this -> pixelThreshold = pixelThreshold;
+      this -> background = background;
+      backgroundColour = TFT_BLACK;
+    } //end constructor
+   // getters
+   byte getStaticStartPosition(byte staticStartPosition){
+    return staticStartPosition;
+   }
+   byte getStaticStripHeight(byte staticStripHeight){
+    return staticStripHeight;
+   }
+   byte getStaticPixelSize(byte staticPixelSize){
+    return staticPixelSize;
+   }
+   byte getPixelThreshold(byte pixelThreshold){
+    return pixelThreshold;
+   }
+   uint16_t getBackground(uint16_t *background){
+    return *background;
+   }
+   // end getters
+   // setters
+   void setStaticStartPosition(byte staticStartPosition){
+    this -> staticStartPosition = staticStartPosition;
+   }
+   void setStaticStripHeight(byte staticStripHeight){
+    this -> staticStripHeight = staticStripHeight;
+   }
+   void setStaticPixelSize(byte staticPixelSize){
+    this -> staticPixelSize = staticPixelSize;
+   }
+   void setPixelThreshold(byte pixelThreshold){
+    this -> pixelThreshold = pixelThreshold;
+   }
+   void setBackground(uint16_t *background){
+    this -> background = background;
+   }
+   //end setters
+   void start(){
     myScreen.init();
     myScreen.setRotation(1); //this turns screen 90 degrees so width actually = height and vice versa
-    myScreen.fillScreen(TFT_BLACK);
+    myScreen.fillScreen(backgroundColour);
     delay(50);
     backGroundImageRefreshColour();
   }
@@ -1338,7 +1377,7 @@ class screenStatic {
           arrayCounter++;
         } //end screenHeight loop
       } //end screenWidth loop
-  } //end void
+  } //end backgroundimagerefreshcolour
   
   void displayStaticBar(){
   /* this draws a chunk of static across the screen of the height of the user's prefernce
@@ -1354,7 +1393,7 @@ class screenStatic {
       for (byte y = staticStartPosition; y < (staticStartPosition + staticStripHeight); y +=staticPixelSize){
         for (byte j = 0; j < screenHeight; j += staticPixelSize){
           byte pixel = random(0, 10);
-          if (pixel <= 5){
+          if (pixel <= pixelThreshold){
             myScreen.fillRect(j, y, staticPixelSize, staticPixelSize, TFT_LIGHTGREY);
           }
           else {
@@ -1369,12 +1408,12 @@ class screenStatic {
       }
       staticStartPosition += staticPixelSize;
       if (staticStartPosition == screenWidth) {
-        staticStartPosition = 0;
+        setStaticStartPosition(0);
       }
-  }
+  } //end displaystaticbar
 
   
-  void fullScreenStaticTimed(long interval, byte repeatValue){
+  void fullScreenStatic(long interval, byte repeatValue){
     /* 
      *  This will show a full screen of static after the time interval specified
      *  A repeat value is for how many times the screen will refresh with static
@@ -1387,7 +1426,7 @@ class screenStatic {
         for (byte j = 0; j < screenWidth; j += staticPixelSize){
           for (byte i = 0; i < screenHeight; i += staticPixelSize){
             byte pixel = random(0, 10);
-            if (pixel <= 5){
+            if (pixel <= pixelThreshold){
               myScreen.fillRect(i, j, staticPixelSize, staticPixelSize, TFT_LIGHTGREY);
             }
             else {
@@ -1397,7 +1436,7 @@ class screenStatic {
         }
       }
     }
-  }
+  } //end full screen static with interval and repeat
   
   void fullScreenStatic(byte repeatValue){
     /*
@@ -1407,7 +1446,7 @@ class screenStatic {
         for (byte j = 0; j < screenWidth; j += staticPixelSize){
           for (byte i = 0; i < screenHeight; i += staticPixelSize){
             byte pixel = random(0, 10);
-            if (pixel <= 5){
+            if (pixel <= pixelThreshold){
               myScreen.fillRect(i, j, staticPixelSize, staticPixelSize, TFT_LIGHTGREY);
             }
             else {
@@ -1416,7 +1455,39 @@ class screenStatic {
           }
         }
       }
-  }
+  } //end fullscreen static with repeat value
+  void pixelateScreen(){
+    for (uint16_t i = 0; i < (screenWidth * screenHeight); i++){
+      /*
+       * Create random x and y values then draw a larger square on the screen
+       * Colour picked from background image to try to match what's already on screen
+       */
+      byte randomY = random(0, screenWidth);
+      byte randomX = random(0, screenHeight);
+      uint16_t tempColour = (randomY * screenHeight) + randomX;// find correct colour in background
+      byte newPixelSize = staticPixelSize * 4; //makes pixels new and blocky
+      myScreen.fillRect(randomX, randomY, newPixelSize, newPixelSize, background[tempColour]);
+    }
+  } //end pixelateScreen
+  void fullScreenStatic2(){
+    uint16_t tempColour[4];
+    tempColour[0] = TFT_BLACK;
+    tempColour[1] = TFT_WHITE;
+    tempColour[2] = TFT_BLACK;
+    tempColour[3] = TFT_LIGHTGREY;
+    for (uint16_t i = 0; i < (screenWidth * screenHeight); i++){
+      /*
+       * Create random x and y values then draw a larger square on the screen
+       * Colour picked from background image to try to match what's already on screen
+       */
+      byte randomY = random(0, screenWidth);
+      byte randomX = random(0, screenHeight);
+      uint16_t colourNumber = random(0, 3);
+      byte newPixelSize = staticPixelSize; //makes pixels new and blocky
+      myScreen.fillRect(randomX, randomY, newPixelSize, newPixelSize, tempColour[colourNumber]);
+    }
+    
+  } //end fullScreenStatic2
   private :
   byte screenHeight;
   byte screenWidth;
@@ -1424,27 +1495,33 @@ class screenStatic {
   byte staticStripHeight;
   byte staticPixelSize;
   byte staticStartPosition;
+  byte pixelThreshold; //higher number = less black in static
   uint32_t backgroundArrayCounter;
-  uint32_t backgroundColour;
+  uint16_t backgroundColour;
   uint16_t *background;
   TFT_eSPI myScreen=TFT_eSPI();
   unsigned long previousMillis = 0;
   };
   
 //construct the static objects
-screenStatic staticOne;
-screenStatic staticTwo;
-screenStatic staticThree;
+screenStatic staticOne(0, 160, 128, 5, 2, 5, Testcard_F);
+screenStatic staticTwo(42, 160, 128, 5, 2, 5, Testcard_F);
+screenStatic staticThree(84, 160, 128, 5, 2, 5, Testcard_F);
 
 void setup(){
   Serial.begin(115200);
   delay(1000);  
-  staticOne.start(0, 160, 128, 5, 2, Testcard_F);
-  staticTwo.start(42, 160, 128, 5, 2, Testcard_F);
-  staticThree.start(84, 160, 128, 5, 2, Testcard_F);
+  staticOne.start();
+  delay(5000);
+//  staticTwo.start();
+//  staticThree.start();
+//  staticOne.fullScreenStatic(100);
 }
 void loop() {
-  staticOne.displayStaticBar();
-  staticTwo.displayStaticBar();
-  staticThree.displayStaticBar();
+  staticOne.pixelateScreen();
+  staticOne.fullScreenStatic2();
+  delay(100);
+//  staticOne.displayStaticBar();
+//  staticTwo.displayStaticBar();
+//  staticThree.displayStaticBar();
 }
