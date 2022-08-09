@@ -9,7 +9,7 @@
  * 
  * If you want to have a different image then I used : https://www.mischianti.org/images-to-byte-array-online-converter-cpp-arduino/
  * Resize the image you'd like to use to match to your screen size before uploading and save as a bitmap ( think I choose 16-bit ) in the image editor of your choice
- * On the webpage, try different background colours until preview turns colour
+ * On the webpage, try different background colours until preview turns colour - transparent probably
  * Draw mode = horizontal 2 bytes per pixel
  * Replace the array info in this code with the one the website suggested
  * 
@@ -3945,12 +3945,16 @@ class screenStatic {
      *  It's slow but not as bad as you'd think
      */
       uint32_t arrayCounter = 0;
+//      unsigned long startTime = millis(); //used for timing checks
       for (byte j = 0; j < screenWidth; j ++){
         for (byte i = 0; i < screenHeight; i ++){
           myScreen.drawPixel(i, j, background[arrayCounter]);
           arrayCounter++;
         } //end screenHeight loop
       } //end screenWidth loop
+/*      unsigned long endTime = millis() - startTime; //used for timing checks
+      Serial.print("Full background refresh Loop time : ");
+      Serial.println(endTime);*/ 
   } //end backgroundimagerefreshcolour
   
   void backgroundLoadGradual(byte increaseBy){
@@ -3959,6 +3963,7 @@ class screenStatic {
      * Higher reduceLoadBy means less image displayed
      * 
      */
+//     unsigned long startTime = millis(); //used for timing checks
     for (uint16_t i = 0; i < (screenWidth * screenHeight) * increaseBy ; i++){
       /*
        * Create random x and y values then draw a pixel on the screen
@@ -3968,7 +3973,10 @@ class screenStatic {
       byte randomX = random(0, screenHeight);
       uint16_t tempColour = (randomY * screenHeight) + randomX;// find correct colour in background
       myScreen.drawPixel(randomX, randomY, background[tempColour]);
-    }   
+    }
+/*    unsigned long endTime = millis() - startTime; //used for timing checks
+      Serial.print("Gradual background refresh Loop time : ");
+      Serial.println(endTime);*/
   }//end backgroundload partial
   
   void displayStaticBar(){
@@ -4054,6 +4062,7 @@ class screenStatic {
      * Show randomly generated static on the screen
      * If changing colour array then make sure to have half black/half different shades
      */
+//     unsigned long startTime = millis(); //used for timing checks
     uint16_t tempColour[4];
     tempColour[0] = TFT_BLACK;
     tempColour[1] = TFT_WHITE;
@@ -4066,7 +4075,9 @@ class screenStatic {
       byte newPixelSize = staticPixelSize; //needed ?
       myScreen.fillRect(randomX, randomY, newPixelSize, newPixelSize, tempColour[colourNumber]);
     }
-    
+/*    unsigned long endTime = millis() - startTime; //used for timing checks
+    Serial.print("Full screen static Loop time : ");
+    Serial.println(endTime);*/
   } //end fullScreenStatic
   
   void staticAndBackground(byte amountOfBackground){
